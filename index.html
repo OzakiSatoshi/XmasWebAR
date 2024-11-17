@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JIET X'mas party 2024</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      background-color: #000;
+    }
+    #webcam {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+      z-index: 0;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .title {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: min(3vh, 24px);
+      font-family: 'Mountains of Christmas', cursive;
+      text-align: center;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow: 
+        0 0 10px rgba(255,0,0,0.8),
+        0 0 20px rgba(0,255,0,0.8),
+        0 0 30px rgba(255,0,0,0.8);
+      white-space: nowrap;
+      z-index: 100;
+    }
+    .capture-button {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.8);
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      cursor: pointer;
+      z-index: 100;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .capture-button img {
+      width: 30px;
+      height: 30px;
+    }
+    .share-menu {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 10px;
+      display: none;
+      z-index: 101;
+    }
+    .share-menu.visible {
+      display: flex;
+      gap: 15px;
+    }
+    .share-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+      color: #333;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+    }
+    .share-button:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+    .powered-by {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      color: white;
+      font-family: Arial, sans-serif;
+      font-size: min(2vh, 14px);
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      z-index: 99;
+    }
+    .christmas-tree {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 120px;
+      height: 160px;
+      z-index: 99;
+      filter: drop-shadow(0 0 5px rgba(0,255,0,0.3));
+    }
+    .star-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      z-index: 99;
+      filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.8));
+      animation: starTwinkle 2s ease-in-out infinite alternate;
+    }
+    @keyframes starTwinkle {
+      from {
+        filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.8));
+      }
+      to {
+        filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="title">JIET X'mas party 2024</div>
+  <video id="webcam" autoplay playsinline></video>
+  <button class="capture-button">
+    <img src="data:image/png;base64,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" alt="Capture">
+  </button>
+  <div class="share-menu">
+    <button class="share-button" data-platform="share">Share</button>
+    <button class="share-button" data-platform="download">Download</button>
+  </div>
+  <svg class="christmas-tree" viewBox="0 0 240 320">
+    <defs>
+      <polygon
+        id="star"
+        points="25,0 30.5,17.5 49,17.5 34,28.5 39.5,45.5 25,35 10.5,45.5 16,28.5 1,17.5 19.5,17.5"
+        fill="yellow"
+        stroke="yellow"
+        stroke-width="5"
+        stroke-linejoin="round"
+      />
+      <path
+        id="leaf"
+        d="M 120,0 180,60 150,60 210,120 175,120 235,190 Q 120,200 5,190 L 65,120 30,120 90,60 60,60 Z"
+        fill="green"
+        stroke="green"
+        stroke-width="10"
+        stroke-linejoin="round"
+      />
+      <polygon
+        id="bucket"
+        points="0,0 70,0 60,50 10,50"
+        fill="brown"
+        stroke="brown"
+        stroke-width="5"
+        stroke-linejoin="round"
+      />
+    </defs>
+    <g id="tree">
+      <rect width="40" height="55" x="100" y="220" fill="peru" />
+      <use href="#bucket" x="85" y="265" />
+      <use href="#leaf" y="35" />
+    </g>
+    <use href="#star" x="95" y="5" />
+    <circle cx="100" cy="75" r="12" fill="red">
+      <animate
+        attributeName="fill"
+        values="red; #600000; red"
+        dur="3s"
+        repeatCount="indefinite"
+      />
+    </circle>
+    <circle cx="130" cy="200" r="12" fill="#600000">
+      <animate
+        attributeName="fill"
+        values="#600000; red; #600000"
+        dur="3s"
+        repeatCount="indefinite"
+      />
+    </circle>
+    <circle cx="150" cy="110" r="12" fill="#000060">
+      <animate
+        attributeName="fill"
+        values="#000060; blue; #000060"
+        dur="3s"
+        repeatCount="indefinite"
+      />
+    </circle>
+    <circle cx="50" cy="210" r="12" fill="blue">
+      <animate
+        attributeName="fill"
+        values="blue; #000060; blue"
+        dur="3s"
+        repeatCount="indefinite"
+      />
+    </circle>
+    <circle cx="75" cy="150" r="12" fill="#909000">
+      <animate
+        attributeName="fill"
+        values="#909000; yellow; #909000"
+        dur="3s"
+        repeatCount="indefinite"
+      />
+    </circle>
+    <circle cx="170" cy="170" r="12" fill="yellow">
+      <animate
+        attributeName="fill"
+        values="yellow; #909000; yellow"
+        dur="3s"
+        repeatCount="indefinite"
+      />
+    </circle>
+  </svg>
+  <svg class="star-container" viewBox="0 0 16 16">
+    <path fill="#FFD700" d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73z"/>
+  </svg>
+  <div class="powered-by">Powered by Qukuri</div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
